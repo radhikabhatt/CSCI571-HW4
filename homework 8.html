@@ -1,0 +1,846 @@
+<html>
+
+  <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />
+    <script type='text/javascript' src='http://code.jquery.com/jquery-latest.min.js '></script>
+
+    <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+    <script src="http://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.0"></script>
+
+    <!--Highcharts-->
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+
+    <!-- Moment.js -->
+    <script src="moment.js"></script>
+    <style>
+      body {
+        background-color: rgb(27, 81, 115);
+        margin: 5px;
+      }
+      
+      .rounded {
+        border-radius: 10px;
+        background-color: #fff;
+        border: 2px solid #fff;
+        padding: 20px;
+        width: 90%;
+      }
+      
+      .hr1 {
+        width: 90%;
+      }
+      
+      .height-50 {
+        height: 50%;
+      }
+      
+      .height-90 {
+        height: 90%;
+      }
+      
+      .right {
+        float: right;
+      }
+      
+      #error {
+        color: red;
+      }
+      
+      .stock_header {
+        margin-left: 27px;
+      }
+      
+      .fb-btn {
+        background: url('download.png') no-repeat;
+        width: 40px;
+        height: 40px;
+        background-size: 40px 40px;
+        border: none;
+      }
+      
+      .refresh-text {
+        font-weight: 200;
+      }
+      
+      #favourites {
+        margin-top: 1%;
+      }
+      
+      #fav-btn {
+        margin-left: 1%;
+      }
+
+      .promo_img{
+      	width: 40%;
+      	height: 5%;
+      }
+
+      .required:after{
+      	content: '*';
+      	color: red;
+      }
+
+      .up{
+      	color: green;
+      }
+
+      .down{
+      	color: red;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <script>
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId: '1786408071588091',
+          xfbml: true,
+          version: 'v2.5',
+          oauth: false
+        });
+      };
+
+      (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {
+          return;
+        }
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+
+    </script>
+    <div class="container">
+      <div class='well'>
+        <div class="row">
+          <h4 class='text-center'>Stock Market Search</h4>
+        </div>
+        <div class="row">
+          <form class='center' id='main_form' onsubmit="return false;">
+            <div class="form-group col-md-8 col-lg-8 col-sm-12 col-xs-12">
+              <label for="stock_name" class='col-md-4 no-padding required'>Enter the stock name or symbol:</label>
+              <div class='col-md-8'>
+                <div class="ui-widget">
+                  <input class="form-control" id="stock_name" placeholder="Apple Inc or AAPL" required>
+                </div>
+                <div id='error'></div>
+              </div>
+            </div>
+            <div class="submit_section col-md-4 col-lg-4 col-sm-12 col-xs-12">
+              <button type="submit" class="btn btn-primary quote"><span class="glyphicon glyphicon-search"></span> Get Quote</button>
+              <button class="btn btn-default" id='clear' type='reset'><span class="glyphicon glyphicon-refresh"></span> Clear</button>
+              <div style="margin-top:5%;"><label>Powered by: <a href="http://dev.markitondemand.com/MODApis/"><img class='promo_img' src="http://cs-server.usc.edu:45678/hw/hw8/images/mod-logo.png"></a></label></div>
+            </div>
+          </form>
+        </div>
+        <br />
+
+
+      </div>
+      <hr class='hr1' />
+      <div class='well'>
+        <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+          <!-- Wrapper for slides -->
+          <div class="carousel-inner" role="listbox">
+            <div class="item active">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <div class="row">
+                    <div class="col-lg-8 col-sm-4 col-xs-3 "><b>Favorite List</b></div>
+
+                    <div class="col-lg-4 col-sm-8 col-xs-9 text-right">
+                      <span class="hidden-xs hidden-sm refresh-text">Automatic Refresh:</span>
+                      <span data-toggle="tooltip" data-placement="top" title="Refresh Favourite table after every 5 seconds"><input id="toggle" type="checkbox" data-toggle="toggle"></span>
+                      <button data-toggle="tooltip" data-placement="top" title="Refresh Favourite table immediately" class="btn btn-default btn-lg" id="refresh"><span class="glyphicon glyphicon-refresh"></span></button>
+                      <a class="btn btn-default right-nav btn-lg" href="#carousel-example-generic" role="button" data-slide="next" title='stock information'>
+                        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                      </a>
+
+                    </div>
+                  </div>
+                </div>
+                <div class="panel-body">
+                  <div class="table-responsive">
+                    <table class="table table-striped" id="favourites">
+                      <thead>
+                        <tr>
+                          <th>Symbol</th>
+                          <th>Company Name</th>
+                          <th>Stock Price</th>
+                          <th>Change (Change Percent)</th>
+                          <th>Market Cap</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <a class="left btn btn-default btn-lg" href="#carousel-example-generic" role="button" data-slide="prev" title='Favourite list'>
+                    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                  </a>
+                </div>
+                <div class="panel-body">
+                  <div class="row">
+                    <div class="col-xs-12">
+                      <ul class="nav nav-pills">
+                        <li role="presentation" class="active">
+                          <a href="#st_table" data-toggle='tab'>
+                            <span class="glyphicon glyphicon-dashboard"></span> <span class="hidden-xs hidden-sm">Current</span> Stock
+                          </a>
+                        </li>
+                        <li role="presentation">
+                          <a href="#hist_charts" data-toggle='tab'>
+                            <span class="glyphicon glyphicon-stats"></span> <span class="hidden-xs hidden-sm">Historical</span> Charts
+                          </a>
+                        </li>
+                        <li role="presentation">
+                          <a href="#news_feed" data-toggle='tab'>
+                            <span class='glyphicon glyphicon-link'></span> News <span class="hidden-xs hidden-sm">Feed</span>
+                          </a>
+                        </li>
+                      </ul>
+                      <br/>
+                      <!-- Display tab contents here -->
+                      <div class="tab-content">
+                        <div class="tab-pane active col-md-12 col-sm-12" id='st_table'>
+                          <h3 class="col-lg-8 col-xs-3">Stock Details</h3>
+                          <div class="col-lg-4 col-xs-9 text-right">
+                          	<button id="fav-btn" class="btn btn-default btn-lg right">
+			    										<span id="fav_icon" class="glyphicon glyphicon-star"></span>
+			    									</button>
+			    									<button class= 'btn btn-default fb-btn' onclick='sharePost()'></button>
+				    							
+                          </div>
+
+			    								
+                          <div id="stock_table" class="col-md-12 col-sm-12 col-lg-6">
+                            <div class="">
+                              <table class='table2 stock_table table table-striped table-bordered' id='stock_info_table'>
+                              </table>
+                            </div>
+                          </div>
+                          <div class="col-md-12 col-sm-12 col-lg-6">
+                            <div id="stock_img" ></div>
+                          </div>
+                        </div>
+
+                        <div class="tab-pane" id="hist_charts" >
+                          <div id='chart'></div>
+                        </div>
+                        <div class="tab-pane" id="news_feed">
+                          <div id='news_feeds_disp'></div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <script>
+          $.support.cors = true;
+
+        </script>
+        <script>
+          var stock_array = new Array();
+          $('#stock_name').autocomplete({
+            delay: 300,
+            source: function(request, response) {
+              $.ajax({
+                url: 'hw8.php',
+                type: 'GET',
+                datatype: 'jsonp',
+                data: {
+                  q: request.term
+                },
+              }).success(function(data) {
+                console.log(JSON.parse(data));
+                arr = JSON.parse(data);
+
+                response($.map(arr, function(item) {
+                  console.log(item.Symbol);
+                  return {
+                    value: item.Symbol,
+                    label: item.Symbol + " - " + item.Name + " (" + item.Exchange + ")"
+                  };
+                }));
+                console.log(stock_array);
+              });
+            },
+            select: function(e, ui) {
+              flag = true;
+              $("#stock_name").val(ui.item.value);
+              return true;
+            },
+          });
+
+          $('.carousel').carousel({
+            interval: false
+          });
+
+          $stock_name = '';
+          $name = '';
+          $symbol = '';
+          $price = '';
+          $change = '';
+          //Call to php for stock information
+          $(".quote").click(function(ev) {
+            ev.preventDefault();
+            $stock_name = $('#stock_name').val();
+            console.log($stock_name);
+            if ($stock_name) {
+              $.ajax({
+                url: 'hw8.php',
+                type: 'GET',
+                datatype: 'jsonp',
+                data: {
+                  sym: $stock_name
+                },
+              }).success(function(response) {
+                result = JSON.parse(response);
+                console.log(result.Status);
+                $('#error').empty();
+                if (result.Status !== 'SUCCESS') {
+                  $('#error').html('Select a valid entry.');
+                  return
+                }
+                $('.right-nav').prop('disabled', false);
+
+                var table = $('#stock_info_table');
+                table.empty();
+                $symbol = result.Symbol;
+                $name = result.Name;
+                $price = parseFloat(result.LastPrice).toFixed(2)
+                $change = parseFloat(result.Change).toFixed(2) + " (" + parseFloat(result.ChangePercent).toFixed(2) + "%)";
+                $marketcap = result.MarketCap;
+
+                table.append("<tr><th>Name</th><td>" + $name + "</td></tr>");
+                table.append("<tr><th>Symbol</th><td>" + $symbol + "</td></tr>");
+                table.append("<tr><th>Last Price</th><td> $" + $price + "</td></tr>");
+
+                if (result.ChangePercent < 0) {
+                  table.append("<tr><th>Change(Change Percent)</th><td><span class='down'>" + $change + "</span><img src=\"http://cs-server.usc.edu:45678/hw/hw8/images/down.png\" height='20px' width='20px'></img>");
+                }
+                if (result.ChangePercent > 0) {
+                  table.append("<tr><th>Change(Change Percent)</th><td><span class='up'>" + $change + "</span><img src=\"http://cs-server.usc.edu:45678/hw/hw8/images/up.png\" height='20px' width='20px'></img>");
+                  // table.append("<img src=\"http://cs-server.usc.edu:45678/hw/hw8/images/up.png\" height='20px' width='20px'></img>");
+                }
+                table.append("</td></tr>");
+
+                // table.append("<tr><th>Time and Date</th><td>".date("Y-m-d  H:i A", strtotime($result->Timestamp)). " EST";
+                table.append("<tr><th>Time and Date</th><td>" + moment(result.Timestamp).format('DD MMM YYYY, hh:mm:ss a') + "</td></tr>");
+                table.append("<tr><th>Market Cap</th><td>" + parseFloat($marketcap / 1000000000).toFixed(2) + " Billion");
+                table.append('</td></tr>');
+
+                table.append("<tr><th>Volume</th><td>" + result.Volume + "</td></tr>");
+
+                if ((result.ChangePercentYTD) < 0) {
+                  table.append("<tr><th>Change YTD (Change Percent YTD)</th><td><span class='down'>" + result.ChangeYTD + " (" + parseFloat(result.ChangePercentYTD).toFixed(2) + ")%</span>" + "<img src=\"http://cs-server.usc.edu:45678/hw/hw8/images/down.png\" height='20px' width='20px'></img>");
+                  // table.append("");
+                }
+                if ((result.ChangePercentYTD) > 0) {
+                  table.append("<tr><th>Change YTD (Change Percent YTD)</th><td><span class='up'>" + result.ChangeYTD + " (" + parseFloat(result.ChangePercentYTD).toFixed(2) + ")%</span>" + "<img src=\"http://cs-server.usc.edu:45678/hw/hw8/images/up.png\" height='20px' width='20px'></img>");
+                }
+                table.append("</td></tr>");
+                table.append("<tr><th>High Price</th><td>$" + parseFloat(result.High).toFixed(2) + "</td></tr>");
+
+                table.append("<tr><th>Low Price</th><td>$" + parseFloat(result.Low).toFixed(2) + "</td></tr>");
+
+                table.append("<tr><th>Opening Price</th><td>$" + parseFloat(result.Open).toFixed(2) + "</td></tr>");
+
+                $('#fav_icon').css('color', 'whitesmoke');
+                $('.right-nav').click();
+
+                // $("#stock_table").html($html);
+                $("#stock_img").empty().append("<img class='img-responsive' src=\"http://chart.finance.yahoo.com/t?s=" + $stock_name + "&lang=en-US&width=500&height=300\">");
+
+                //Display chart
+                $.ajax({
+                  url: 'hw8.php',
+                  type: 'GET',
+                  datatype: 'jsonp',
+                  data: {
+                    chart: $stock_name
+                  },
+                }).success(function(json_data_str) {
+                  json_data = JSON.parse(json_data_str);
+                  console.log(json_data);
+
+                  var dates = json_data.Dates || [];
+                  var elements = json_data.Elements || [];
+                  var chartSeries = [];
+
+                  if (elements[0]) {
+
+                    for (var i = 0, len = dates.length; i < len; i++) {
+                      var date = gtDate(dates[i]);
+                      var point_data = [
+                        date,
+                        elements[0].DataSeries['open'].values[i],
+                        elements[0].DataSeries['high'].values[i],
+                        elements[0].DataSeries['low'].values[i],
+                        elements[0].DataSeries['close'].values[i]
+                      ];
+                      chartSeries.push(point_data);
+                    };
+                  }
+
+                  console.log(chartSeries);
+
+                  $('#chart').highcharts('StockChart', {
+                    exporting: {
+                      enabled: false
+                    },
+                    tooltip: {
+                      shared: false,
+                      formatter: function() {
+                        return Highcharts.dateFormat('%A, %b %e, %Y', this.point.x) + '<br/><span style="color:' + this.point.series.color + '">\u25CF</span> ' + $stock_name + ': <b>$' + this.point.y + '';
+                      }
+                    },
+                    rangeSelector: {
+                      inputEnabled: false,
+                      buttons: [{
+                        type: 'week',
+                        count: 1,
+                        text: '1w'
+                      }, {
+                        type: 'month',
+                        count: 1,
+                        text: '1m'
+                      }, {
+                        type: 'month',
+                        count: 3,
+                        text: '3m'
+                      }, {
+                        type: 'month',
+                        count: 6,
+                        text: '6m'
+                      }, {
+                        type: 'ytd',
+                        text: 'YTD'
+                      }, {
+                        type: 'year',
+                        count: 1,
+                        text: '1y'
+                      }, {
+                        type: 'all',
+                        text: 'All'
+                      }],
+                      selected: 0
+                    },
+                    title: {
+                      text: $stock_name + ' Stock Price'
+                    },
+                    yAxis: [{
+                      title: {
+                        text: 'Stock Value'
+                      }
+                    }],
+                    series: [{
+                      name: $stock_name + ' Stock Price',
+                      data: chartSeries,
+                      type: 'area',
+                      threshold: null,
+                      tooltip: {
+                        valueDecimals: 2
+                      },
+                      fillColor: {
+                        linearGradient: {
+                          x1: 0,
+                          y1: 0,
+                          x2: 0,
+                          y2: 1
+                        },
+                        stops: [
+                          [0, Highcharts.getOptions().colors[0]],
+                          [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                        ]
+                      }
+                    }]
+                  });
+                })
+                getNewFeeds($stock_name);
+                // }
+              })
+            }
+          });
+
+          function gtDate(dateIn) {
+            var dat = new Date(dateIn);
+            return Date.UTC(dat.getFullYear(), dat.getMonth(), dat.getDate());
+          };
+
+          //Get news feeds
+          function getNewFeeds(sym) {
+            var appId = ':4i+VizUTAPAghDomEq7rWWGecrU85moy5AdfHvOe0Xw';
+            var azureKey = btoa(appId);
+
+            var myUrl = "https://api.datamarket.azure.com/Bing/Search/v1/News?Query=%27" + sym + "%27&Options=%27EnableHighlighting%27&\$format=json";
+            $.ajax({
+              method: 'post',
+              url: myUrl,
+              //Set headers to authorize search with Bing
+              headers: {
+                'Authorization': 'Basic ' + azureKey
+              },
+              dataType: "json",
+              success: function(data) {
+                console.log(data);
+                feeds = $('#news_feeds_disp');
+                feeds.empty();
+                $.each(data,
+                  function(i, item) {
+                    for (j = 0; j < item.results.length; j++) {
+                      desc = item.results[j].Description;
+                      var regexStart = new RegExp("\uE000", "g");
+                      var regexEnd = new RegExp("\uE001", "g");
+
+                      descp = desc.replace(regexStart, "<strong>").replace(regexEnd, "</strong>");
+
+                      title = item.results[j].Title;
+                      title = title.replace(regexStart, "").replace(regexEnd, "");
+
+                      result_html = "<div class='well' style='width:100%;'><a target='_blank' href='" + item.results[j].Url + "' >" + title + "</a><p style='margin-top:2%'>" + descp + "</p><label>Publlisher: " + item.results[j].Source + "</label><p><label>Date: " + moment(item.results[j].Date).format('D MMM YYYY HH:mm:ss') + "</label></p></div>";
+                      feeds.append(result_html);
+                    }
+                  });
+              },
+              failure: function(err) {
+                console.error(err);
+              }
+            });
+          };
+          // }
+
+          //fav button
+          var List = new Array();
+
+          $('#fav-btn').click(function() {
+            if ($('#fav_icon').css('color') == 'rgb(255, 255, 0)') {
+              $('#fav_icon').css('color', 'whitesmoke');
+              List = JSON.parse(localStorage['list']);
+              List.splice($.inArray($stock_name, List), $stock_name.length - 1);
+              localStorage.setItem('list', JSON.stringify(List));
+              createList();
+
+              return false;
+            }
+            if (localStorage.getItem('list') != null || localStorage.getItem('list') != undefined)
+              List = JSON.parse(localStorage['list']);
+
+            if ($.inArray($stock_name, List) == -1) {
+              List.push($stock_name);
+              localStorage.setItem('list', JSON.stringify(List));
+              table = $('#favourites');
+              row = null;
+              $.ajax({
+                url: 'hw8.php',
+                type: 'GET',
+                datatype: 'jsonp',
+                data: {
+                  sym: $stock_name
+                },
+              }).success(function(res) {
+                var result = JSON.parse(res);
+                row += "<tr><td><a class='result' id='" + result.Symbol + "'>" + result.Symbol + "</a></td><td>" + result.Name + "</td>";
+                row += "<td>$ " + parseFloat(result.LastPrice).toFixed(2) + "</td>";
+                if (result.Change < 0) {
+                  row += "<td style='color:red'>" + parseFloat(result.Change).toFixed(2) + " (" + parseFloat(result.ChangePercent).toFixed(2) + "%)<img class='arrow' src='http://cs-server.usc.edu:45678/hw/hw8/images/down.png'></td>";
+                } else {
+                  row += "<td style='color:green'>" + parseFloat(result.Change).toFixed(2) + " (" + parseFloat(result.ChangePercent).toFixed(2) + "%)<img class='arrow' src='http://cs-server.usc.edu:45678/hw/hw8/images/up.png'></td>";
+                }
+
+                row += "<td>" + parseFloat(result.MarketCap / 1000000000).toFixed(2) + " Billion</td>";
+                row += "<td><button id='" + result.Symbol + "' class='remove btn btn-default lg-btn' ><span class='glyphicon glyphicon-trash'></span></button></td></tr>";
+                table.append(row);
+              });
+            }
+
+            $('#fav_icon').css('color', 'yellow');
+
+          });
+
+          if (localStorage.getItem('list') != null || localStorage.getItem('list') != undefined) {
+            createList();
+          }
+
+          function createList() {
+            $('#favourites tbody').empty();
+            table = $('#favourites');
+            List = JSON.parse(localStorage['list']);
+
+            for (i = 0; i < List.length; i++) {
+              row = null;
+              $.ajax({
+                url: 'hw8.php',
+                type: 'GET',
+                datatype: 'jsonp',
+                data: {
+                  sym: List[i]
+                },
+              }).success(function(res) {
+                result = JSON.parse(res);
+                console.log(result);
+                row += "<tr><td><a class='result' id='" + result.Symbol + "'>" + result.Symbol + "</a></td>";
+                row += "<td>" + result.Name + "</td>";
+                row += "<td>$ " + parseFloat(result.LastPrice).toFixed(2) + "</td>";
+                if (result.Change < 0) {
+                  row += "<td style='color:red'>" + parseFloat(result.Change).toFixed(2) + " (" + parseFloat(result.ChangePercent).toFixed(2) + "%)<img class='arrow' src='http://cs-server.usc.edu:45678/hw/hw8/images/down.png'></td>";
+                } else {
+                  row += "<td style='color:green'>" + parseFloat(result.Change).toFixed(2) + " (" + parseFloat(result.ChangePercent).toFixed(2) + "%)<img class='arrow' src='http://cs-server.usc.edu:45678/hw/hw8/images/up.png'></td>";
+                }
+                row += "<td>" + parseFloat(result.MarketCap / 1000000000).toFixed(2) + " Billion</td>";
+                row += "<td><button id='" + result.Symbol + "' class='remove btn btn-default lg-btn'><span class='glyphicon glyphicon-trash'></span></button></td></tr>";
+
+                table.append(row);
+              });
+            }
+          };
+
+          //Click on fav table link
+          $(document).on('click', '.result', function() {
+            $stock_name = $(this)[0].id;
+
+            $('#fav_icon').css('color', 'yellow');
+            $.ajax({
+              url: 'hw8.php',
+              type: 'GET',
+              datatype: 'jsonp',
+              data: {
+                sym: $stock_name
+              },
+            }).success(function(response) {
+              result = JSON.parse(response);
+              console.log(result.Status);
+
+              var table = $('#stock_info_table');
+              table.empty();
+              $symbol = result.Symbol;
+              $name = result.Name;
+              $price = parseFloat(result.LastPrice).toFixed(2)
+              $change = parseFloat(result.Change).toFixed(2) + " (" + parseFloat(result.ChangePercent).toFixed(2) + "%)";
+              $marketcap = result.MarketCap;
+
+              table.append("<tr><th>Name</th><td>" + $name + "</td></tr>");
+              table.append("<tr><th>Symbol</th><td>" + $symbol + "</td></tr>");
+              table.append("<tr><th>Last Price</th><td> $" + $price + "</td></tr>");
+
+              if (result.ChangePercent < 0) {
+                table.append("<tr><th>Change(Change Percent)</th><td><span class='down'>" + $change + "</span><img src=\"http://cs-server.usc.edu:45678/hw/hw8/images/down.png\" height='20px' width='20px'></img>");
+              }
+              if (result.ChangePercent > 0) {
+                table.append("<tr><th>Change(Change Percent)</th><td><span class='up'>" + $change + "</span><img src=\"http://cs-server.usc.edu:45678/hw/hw8/images/up.png\" height='20px' width='20px'></img>");
+                // table.append("<img src=\"http://cs-server.usc.edu:45678/hw/hw8/images/up.png\" height='20px' width='20px'></img>");
+              }
+              table.append("</td></tr>");
+
+              // table.append("<tr><th>Time and Date</th><td>".date("Y-m-d  H:i A", strtotime($result->Timestamp)). " EST";
+              table.append("<tr><th>Time and Date</th><td>" + moment(result.Timestamp).format('DD MMM YYYY, hh:mm:ss a') + "</td></tr>");
+              table.append("<tr><th>Market Cap</th><td>" + parseFloat($marketcap / 1000000000).toFixed(2) + " Billion");
+              table.append('</td></tr>');
+
+              table.append("<tr><th>Volume</th><td>" + result.Volume + "</td></tr>");
+
+              if ((result.ChangePercentYTD) < 0) {
+                table.append("<tr><th>Change YTD (Change Percent YTD)</th><td><span class='down'>" + result.ChangeYTD + " (" + parseFloat(result.ChangePercentYTD).toFixed(2) + ")%</span>" + "<img src=\"http://cs-server.usc.edu:45678/hw/hw8/images/down.png\" height='20px' width='20px'></img>");
+                // table.append("");
+              }
+              if ((result.ChangePercentYTD) > 0) {
+                table.append("<tr><th>Change YTD (Change Percent YTD)</th><td><span class='up'>" + result.ChangeYTD + " (" + parseFloat(result.ChangePercentYTD).toFixed(2) + ")%</span>" + "<img src=\"http://cs-server.usc.edu:45678/hw/hw8/images/up.png\" height='20px' width='20px'></img>");
+              }
+              table.append("</td></tr>");
+              table.append("<tr><th>High Price</th><td>$" + parseFloat(result.High).toFixed(2) + "</td></tr>");
+
+              table.append("<tr><th>Low Price</th><td>$" + parseFloat(result.Low).toFixed(2) + "</td></tr>");
+
+              table.append("<tr><th>Opening Price</th><td>$" + parseFloat(result.Open).toFixed(2) + "</td></tr>");
+
+              $("#stock_img").empty().append("<img class='img-responsive' src=\"http://chart.finance.yahoo.com/t?s=" + $stock_name + "&lang=en-US&width=500&height=300\">");
+
+              //Display chart
+              $.ajax({
+                url: 'hw8.php',
+                type: 'GET',
+                datatype: 'jsonp',
+                data: {
+                  chart: $stock_name
+                },
+              }).success(function(json_data_str) {
+                json_data = JSON.parse(json_data_str);
+                console.log(json_data);
+
+                var dates = json_data.Dates || [];
+                var elements = json_data.Elements || [];
+                var chartSeries = [];
+
+                if (elements[0]) {
+
+                  for (var i = 0, len = dates.length; i < len; i++) {
+                    var date = gtDate(dates[i]);
+                    var point_data = [
+                      date,
+                      elements[0].DataSeries['open'].values[i],
+                      elements[0].DataSeries['high'].values[i],
+                      elements[0].DataSeries['low'].values[i],
+                      elements[0].DataSeries['close'].values[i]
+                    ];
+                    chartSeries.push(point_data);
+                  };
+                }
+
+                console.log(chartSeries);
+
+                $('#chart').highcharts('StockChart', {
+                  exporting: {
+                    enabled: false
+                  },
+                  tooltip: {
+                    shared: false,
+                    formatter: function() {
+                      return Highcharts.dateFormat('%A, %b %e, %Y', this.point.x) + '<br/><span style="color:' + this.point.series.color + '">\u25CF</span> ' + $stock_name + ': <b>$' + this.point.y + '';
+                    }
+                  },
+                  rangeSelector: {
+                    inputEnabled: false,
+                    buttons: [{
+                      type: 'week',
+                      count: 1,
+                      text: '1w'
+                    }, {
+                      type: 'month',
+                      count: 1,
+                      text: '1m'
+                    }, {
+                      type: 'month',
+                      count: 3,
+                      text: '3m'
+                    }, {
+                      type: 'month',
+                      count: 6,
+                      text: '6m'
+                    }, {
+                      type: 'ytd',
+                      text: 'YTD'
+                    }, {
+                      type: 'year',
+                      count: 1,
+                      text: '1y'
+                    }, {
+                      type: 'all',
+                      text: 'All'
+                    }],
+                    selected: 0
+                  },
+                  title: {
+                    text: $stock_name + ' Stock Price'
+                  },
+                  yAxis: [{
+                    title: {
+                      text: 'Stock Value'
+                    }
+                  }],
+                  series: [{
+                    name: $stock_name + ' Stock Price',
+                    data: chartSeries,
+                    type: 'area',
+                    threshold: null,
+                    tooltip: {
+                      valueDecimals: 2
+                    },
+                    fillColor: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1
+                      },
+                      stops: [
+                        [0, Highcharts.getOptions().colors[0]],
+                        [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                      ]
+                    }
+                  }]
+                });
+              })
+              getNewFeeds($stock_name);
+              $('.carousel').carousel('next');
+            })
+          });
+
+          $('#clear').click(function() {
+            $('#error').empty();
+            $('.right-nav').prop('disabled', true);
+            $('.carousel').carousel(0);
+            return
+          });
+
+          window.setInterval(refresh, 5000);
+
+          function refresh() {
+            console.log($('#toggle').prop('checked'));
+            if ($('#toggle').prop('checked')) {
+              createList();
+            }
+          };
+
+          $('#refresh').click(function() {
+            createList();
+          });
+
+          $(document).on('click', '.remove', function() {
+            List = JSON.parse(localStorage['list']);
+            List.splice($.inArray($(this)[0].id, List), $(this)[0].id.length - 1);
+            localStorage.setItem('list', JSON.stringify(List));
+            $(this).closest('tr').remove();
+            return false;
+          });
+
+          $(document).ready(function(){
+          		$("a[href='#hist_charts']").on('shown.bs.tab',function(e){
+          			$("#chart").highcharts().reflow();
+							});
+          });
+
+          //Share post on FB
+          function sharePost() {
+            FB.ui({
+              method: 'feed',
+              link: 'http://dev.markitondemand.com/MODApis/',
+              name: 'Current Stock Price of '+$name+' is $ '+$price,
+              description: 'Stock Information of '+$name+' ('+ $symbol+')',
+              caption: 'Last Traded Price: $ '+$price+', Change: '+$change,
+              picture: "http://chart.finance.yahoo.com/t?s=" + $stock_name + "&lang=en-US&width=500&height=300",
+            }, function(response) {
+              if (response && response.post_id) {
+                alert('Posted Successfully');
+              } else {
+                alert('Not Posted');
+              }
+            })
+          }
+
+        </script>
+  </body>
+
+</html>
